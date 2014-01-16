@@ -30,7 +30,7 @@ from twisted.internet import glib2reactor
 glib2reactor.install()
 from twisted.internet import reactor, defer
 
-from autobahn.websocket import listenWS
+from autobahn.twisted.websocket import listenWS
 from autobahn.wamp import exportRpc, WampServerFactory, WampCraServerProtocol
 
 from dbus.mainloop.glib import DBusGMainLoop
