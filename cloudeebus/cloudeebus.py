@@ -167,6 +167,9 @@ class DbusCallHandler:
         '''
         return JSON string result array
         '''
+        # FIXME: dbus.Byte is converted to UTF-8 encoded strings in JSON, while
+        # most of the time it should be a integer
+        result = eval(str(result).replace("dbus.Byte", "dbus.Int16"))
         self.request.callback(json.dumps(result))
         self.pending = False
 
