@@ -1,0 +1,39 @@
+1) Download and install latest virtualenv:
+
+$ pypi-install virtualenv
+(or pip install virtualenv)
+
+2) Create a virtualenv for cloudeebus:
+
+$ virtualenv cloudeebus-bin
+(change "cloudeebus-bin" with the location where cloudeebus will be installed)
+
+3) Enter the virtualenv:
+
+$ source cloudeebus-bin/bin/activate
+
+4) Update setuptools (required for installing cloudeebus dependencies):
+
+(cloudeebus-bin)$ easy_install -U setuptools
+
+5) Install twisted:
+
+(cloudeebus-bin)$ sudo apt-get install python-dev
+(cloudeebus-bin)$ easy_install twisted
+
+6) Install cloudeebus (dependencies are downloaded and installed automatically):
+
+(cloudeebus-bin)$ python setup.py install
+
+7) Copy D-Bus, GLib and GObject bindings to virtualenv:
+
+(cloudeebus-bin)$ sudo apt-get install python-dbus python-gobject
+(cloudeebus-bin)$ cp -aL /usr/lib/python2.7/dist-packages/{_dbus*.so,dbus,glib,gobject} $VIRTUAL_ENV/lib/python2.7/site-packages
+
+8) Install org.cloudeebus.conf:
+
+$ sudo cp org.cloudeebus.conf /etc/dbus-1/system.d/
+
+9) To run:
+
+(cloudeebus)$ sudo cloudeebus.py -o
