@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Proximity Demo</title>
+    <script src="../../lib/autobahn.min.js"></script>
+    <script src="../../cloudeebus/cloudeebus.js"></script>
+    <script type="text/javascript">
+    var connected = false;
+    var alertLevelChr = null;
+
+    cloudeebus.log = function(msg) {
+      document.getElementById("log").innerHTML += msg + "\n";
+    }
+
+    function errorCB(error) {
+      cloudeebus.log("error: " + error + "\n");
+    }
+
+    function connectSuccess() {
+      var bus = cloudeebus.SystemBus();
+      bus.getObject("org.bluez", "/", getManagedObjects, errorCB);
+    }
+
+    function connect() {
+      cloudeebus.connect("ws://localhost:9000", null, connectSuccess, errorCB);
+    }
+
+    function getManagedObjects(proxy) {
+      proxy.GetManagedObjects().then(getAlertLevelChr, errorCB);
+    }
+
+    function getAlertLevelChr(objs) {
+      var service = null;
+      for (o in objs) {
+        if (objs[o]["org.bluez.Service1"] == null)
+          continue;
+
+        if (objs[o]["org.bluez.Service1"]["UUID"] == "00001802-0000-1000-8000-00805f9b34fb") {
+          cloudeebus.log("Found IAS: " + o);
+          service = o;
+          break;
+        }
+      }
+
+      if (service == null) {
+        cloudeebus.log("IAS service not found");
+        return;
+      }
+
+      for (o in objs) {
+        if (objs[o]["org.bluez.Characteristic1"] == null)
+          continue;
+
+        if (o.indexOf(service) == 0) {
+          cloudeebus.log("Found Alert Level Characteristic: " + o);
+          alertLevelChr = o;
+          break;
+        }
+      }
+
+      if (alertLevelChr == null) {
+        cloudeebus.log("Alert Level Characteristic for IAS not found");
+        return;
+      }
+
+      document.getElementById("alert0").disabled = false;
+      document.getElementById("alert1").disabled = false;
+      document.getElementById("alert2").disabled = false;
+    }
+
+    function immAlert(value) {
+      if (alertLevelChr == null)
+        return;
+
+      var bus = cloudeebus.SystemBus();
+
+      function successCB() {
+        cloudeebus.log("Set alert level to " + value);
+      }
+
+      /* FIXME: add support for D-Bus byte array (e.g. converted from Uint8Array())
+       * so the methods with "ay" signature can use the automatic introspection. */
+      var obj = bus.getObject("org.bluez", alertLevelChr, null, errorCB);
+      obj.callMethod("org.freedesktop.DBus.Properties", "Set",
+          ["org.bluez.Characteristic1", "Value", [value]], "ssv").then(successCB, errorCB);
+    }
+    </script>
+  </head>
+  <body onload="connect()">
+    <h1>Proximity Demo</h1>
+    <input id="alert0" type="button" value="No Alert" disabled="true" onclick="immAlert(0)"/>
+    <input id="alert1" type="button" value="Low Alert" disabled="true" onclick="immAlert(1)"/>
+    <input id="alert2" type="button" value="High Alert" disabled="true" onclick="immAlert(2)"/>
+    <input type="button" value="Clear Log" onclick="document.getElementById('log').innerHTML='';"/>
+    <pre id="log" style="height: 20em; overflow-x: auto; overflow-y: auto; background-color: gray;"></pre>
+   </body>
+</html>
