@@ -517,6 +517,10 @@ class CloudeebusService:
         args = []
         if len(list) == 6:
             args = json.loads(list[5])
+        # FIXME: Workaround for converting an array of integers into an array of Byte.
+        # Ideally, this should be done by checking the signature from introspection data.
+        if list[3:5] + args[0:2] == ["org.freedesktop.DBus.Properties", "Set", "org.bluez.Characteristic1", "Value"]:
+                args[2] = map(dbus.Byte, args[2])
         
         # get dbus proxy method
         method = self.proxyMethod(*list[0:5])
