@@ -138,6 +138,13 @@ class DbusSignalHandler:
         '''
         publish dbus args under topic hash id
         '''
+        # FIXME: Workaround for converting org.bluez.Characteristic1 Flags property to Int32
+        # as dbus.Byte is incorrectly converted into unicode string on JSON
+        if self.id == "system#org.bluez#/#org.freedesktop.DBus.ObjectManager#InterfacesAdded":
+            props = args[1].get("org.bluez.Characteristic1")
+            if props is not None:
+                props["Flags"] = dbus.Int32(props["Flags"])
+
         factory.dispatch(self.id, json.dumps(args))
 
 
