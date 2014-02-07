@@ -145,6 +145,11 @@ class DbusSignalHandler:
             if props is not None:
                 props["Flags"] = dbus.Int32(props["Flags"])
 
+        if self.id.endswith("#org.freedesktop.DBus.Properties#PropertiesChanged") and \
+                args[0] == "org.bluez.Characteristic1":
+            if args[1].get("Value") is not None:
+                args[1]["Value"] = map(int, args[1]["Value"])
+
         factory.dispatch(self.id, json.dumps(args))
 
 
